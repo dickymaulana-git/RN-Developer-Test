@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   StyleSheet,
   Text,
@@ -6,12 +6,24 @@ import {
   SafeAreaView,
   TextInput,
   TouchableOpacity,
+  FlatList,
+  Image
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+// import {useSelector,useDispatch} from 'react-redux'
+// import { actionGetRecruitmentData } from '../redux/action/action';
 
 export default function HomeScreen() {
   const [filterDropDown, setFilterDropDown] = useState(false);
   const [switchFulltime, setSwitchFulltime] = useState(false);
+  // const {recruitment} = useSelector(state => state.allReducer)
+  // const dispatch = useDispatch()
+// console.log('data',recruitment);
+  const data = require('../../assets/data/requairement');
+  
+  // useEffect(() => {
+  //   dispatch(actionGetRecruitmentData())
+  // }, [])
 
   return (
     <SafeAreaView style={styles.container}>
@@ -50,6 +62,23 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
       )}
+      <FlatList 
+      data={data.default}
+      renderItem={({item})=>{
+          console.log('i',item);
+          return(
+              <View style={styles.recruitmentContainer}>
+                  <Image style={styles.companyLogo} source={{uri: item.company_logo}}/>
+                  <View style={styles.dataDesc}>
+                      <Text style={styles.dataTitle}>{item.title}</Text>
+                      <Text style={styles.dataDescText}>{item.company}</Text>
+                      <Text style={styles.dataDescText}>{item.location}</Text>
+                  </View>
+                  <Icon style={styles.detailIcon} name='chevron-right' size={30} />
+              </View>
+          )
+      }}
+      />
     </SafeAreaView>
   );
 }
@@ -104,4 +133,30 @@ const styles = StyleSheet.create({
     marginTop: 12,
     alignSelf: 'flex-end',
   },
+  recruitmentContainer:{
+      flexDirection:'row',
+      marginVertical:10,
+      borderColor:'black',
+      borderWidth:1,
+      padding:4,
+  },
+  companyLogo:{
+      width:'25%',
+      height: 100,
+      resizeMode :'contain'
+  },
+  dataDesc:{
+      flex:1,
+      justifyContent:'space-around',
+      padding:4
+  },
+  detailIcon:{
+    alignSelf:'center'
+  },
+  dataTitle:{
+    fontWeight:'bold'
+  },
+  dataDescText:{
+    color:'grey'
+  }
 });
