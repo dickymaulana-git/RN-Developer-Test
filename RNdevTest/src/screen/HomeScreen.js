@@ -7,23 +7,39 @@ import {
   TextInput,
   TouchableOpacity,
   FlatList,
-  Image
+  Image,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-// import {useSelector,useDispatch} from 'react-redux'
-// import { actionGetRecruitmentData } from '../redux/action/action';
 
-export default function HomeScreen() {
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {useSelector, useDispatch} from 'react-redux';
+import {
+  actionGetRecruitmentData,
+} from '../redux/action/action';
+
+export default function HomeScreen(props) {
   const [filterDropDown, setFilterDropDown] = useState(false);
   const [switchFulltime, setSwitchFulltime] = useState(false);
-  // const {recruitment} = useSelector(state => state.allReducer)
-  // const dispatch = useDispatch()
-// console.log('data',recruitment);
-  const data = require('../../assets/data/requairement');
-  
-  // useEffect(() => {
-  //   dispatch(actionGetRecruitmentData())
-  // }, [])
+  const [location, setLocation] = useState('')
+  const [search, setSearch] = useState('');
+  const [searchResult, setSearchResult] = useState([]);
+  const {recruitment} = useSelector(state => state.allReducer);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(actionGetRecruitmentData());
+  }, []);
+
+  const searchResultHandler = () => {
+    setSearchResult(recruitment.filter(e => e.title.includes(search)));
+  };
+
+  const applyResultHandler = () => {
+    if (location.length > 0){
+      setSearchResult(recruitment.filter(e => e.type.includes(location)));
+    }
+  };
+  console.log('sr', searchResult);
+  console.log('sr', location);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -31,7 +47,13 @@ export default function HomeScreen() {
       <View style={styles.header}>
         <View style={styles.searchBar}>
           <Icon name="magnify" size={24} />
-          <TextInput placeholder="Search" />
+          <TextInput
+            placeholder="Search"
+            value={search}
+            onChangeText={setSearch}
+            onSubmitEditing={() => searchResultHandler()}
+            style={{marginLeft: 10, width: '90%', maxWidth: '90%'}}
+          />
         </View>
         <Icon
           onPress={() => setFilterDropDown(!filterDropDown)}
@@ -55,30 +77,76 @@ export default function HomeScreen() {
             <TextInput
               style={styles.inputLocation}
               placeholder="input location"
+              value={location}
+              onChangeText={setLocation}
             />
           </View>
-          <TouchableOpacity style={styles.applyFilter}>
+          <TouchableOpacity onPress={()=>{
+            applyResultHandler()
+            setFilterDropDown(!filterDropDown)
+            }} style={styles.applyFilter}>
             <Text>Apply Filter</Text>
           </TouchableOpacity>
         </View>
       )}
-      <FlatList 
-      data={data.default}
-      renderItem={({item})=>{
-          console.log('i',item);
-          return(
-              <View style={styles.recruitmentContainer}>
-                  <Image style={styles.companyLogo} source={{uri: item.company_logo}}/>
+      {searchResult?.length > 0 ? (
+        <View>
+          <Text>Search Result</Text>
+          <FlatList
+            data={searchResult}
+            renderItem={({item}) => {
+              return (
+                <View style={styles.recruitmentContainer}>
+                  <Image
+                    style={styles.companyLogo}
+                    source={{uri: item.company_logo}}
+                  />
                   <View style={styles.dataDesc}>
-                      <Text style={styles.dataTitle}>{item.title}</Text>
-                      <Text style={styles.dataDescText}>{item.company}</Text>
-                      <Text style={styles.dataDescText}>{item.location}</Text>
+                    <Text style={styles.dataTitle}>{item.title}</Text>
+                    <Text style={styles.dataDescText}>{item.company}</Text>
+                    <Text style={styles.dataDescText}>{item.location}</Text>
                   </View>
-                  <Icon style={styles.detailIcon} name='chevron-right' size={30} />
+                  <Icon
+                    onPress={() => {
+                      props.navigation.navigate('Detail', {detail: item});
+                    }}
+                    style={styles.detailIcon}
+                    name="chevron-right"
+                    size={30}
+                  />
+                </View>
+              );
+            }}
+          />
+        </View>
+      ) : (
+        <FlatList
+          data={recruitment}
+          renderItem={({item}) => {
+            return (
+              <View style={styles.recruitmentContainer}>
+                <Image
+                  style={styles.companyLogo}
+                  source={{uri: item.company_logo}}
+                />
+                <View style={styles.dataDesc}>
+                  <Text style={styles.dataTitle}>{item.title}</Text>
+                  <Text style={styles.dataDescText}>{item.company}</Text>
+                  <Text style={styles.dataDescText}>{item.location}</Text>
+                </View>
+                <Icon
+                  onPress={() => {
+                    props.navigation.navigate('Detail', {detail: item});
+                  }}
+                  style={styles.detailIcon}
+                  name="chevron-right"
+                  size={30}
+                />
               </View>
-          )
-      }}
-      />
+            );
+          }}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -133,30 +201,30 @@ const styles = StyleSheet.create({
     marginTop: 12,
     alignSelf: 'flex-end',
   },
-  recruitmentContainer:{
-      flexDirection:'row',
-      marginVertical:10,
-      borderColor:'black',
-      borderWidth:1,
-      padding:4,
+  recruitmentContainer: {
+    flexDirection: 'row',
+    marginVertical: 10,
+    borderColor: 'black',
+    borderWidth: 1,
+    padding: 4,
   },
-  companyLogo:{
-      width:'25%',
-      height: 100,
-      resizeMode :'contain'
+  companyLogo: {
+    width: '25%',
+    height: 100,
+    resizeMode: 'contain',
   },
-  dataDesc:{
-      flex:1,
-      justifyContent:'space-around',
-      padding:4
+  dataDesc: {
+    flex: 1,
+    justifyContent: 'space-around',
+    padding: 4,
   },
-  detailIcon:{
-    alignSelf:'center'
+  detailIcon: {
+    alignSelf: 'center',
   },
-  dataTitle:{
-    fontWeight:'bold'
+  dataTitle: {
+    fontWeight: 'bold',
   },
-  dataDescText:{
-    color:'grey'
-  }
+  dataDescText: {
+    color: 'grey',
+  },
 });

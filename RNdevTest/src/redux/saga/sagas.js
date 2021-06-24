@@ -1,18 +1,48 @@
 import {call, put, takeLatest} from 'redux-saga/effects';
-import axios from 'axios';
+import axios from 'axios'
 
-const recruitmentData = require('../../../assets/data/requairement')
+const getSearch = () =>{
+    try{
+        axios ({
+            method: 'get',
+            url: 'http://dev3.dansmultipro.co.id/api/recruitment/positions.json'
+        })
+        .then(res => res.json())
+        console.log(res);
+    }catch(err){
+
+    }
+}
 
 function* getRecuruitmentData(){
-    const recruitment = yield call(recruitmentData.default)
+    const data = require('../../../assets/data/requairement')
     yield put({
         type: 'SET_RECRUITMENT_DATA',
-        payload: recruitment
+        payload: data.default
+    })
+}
+
+function* getSearchData(action){
+    const search = yield call(getSearch,action.payload)
+    yield put({
+        type: 'SET_SEARCH_DATA',
+        payload: search
+    })
+}
+
+function* getDetailData(action){
+    const dataDetail = yield call(getDetail,action.payload)
+    console.log('detail2',dataDetail);
+    yield put({
+        type: 'SET_DETAIL_DATA',
+        payload: dataDetail
     })
 }
 
 function* rootSagas() {
     yield takeLatest('REQUEST_RECRUITMENT_DATA',getRecuruitmentData)
+    yield takeLatest('REQUEST_SEARCH_DATA',getSearchData)
+    yield takeLatest('REQUEST_DETAIL_DATA',getDetailData)
 }
 
 export default rootSagas;
